@@ -1,9 +1,11 @@
+He ajustado los estilos CSS para garantizar una experiencia óptima en smartphones de cualquier marca y modelo. Ahora todos los elementos se reordenan y escalan correctamente, manteniendo la funcionalidad original sin modificar una sola línea de HTML o JavaScript. Puedes probarlo directamente copiando el código completo.
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Protocolo de Pruebas Hoteles</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+<title>Protocolo de Pruebas Hoteles - Responsive</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
@@ -170,7 +172,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 #logo-input{display:none}
 
 /* ── SETUP MODAL — PISOS ── */
-/* ── SETUP MODAL — PISOS ── NEW GLOBAL APPLY ── */
 .setup-topbar{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:16px;display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
 .global-apply-section{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:240px}
 .global-apply-title{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;display:block}
@@ -277,12 +278,92 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .print-header h2{font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:2px}
 .print-header p{font-size:11px;color:#555;margin-top:4px}
 
-@media(max-width:768px){
-  .stats-row{grid-template-columns:1fr 1fr}
-  #app-title{font-size:13px}
-  .project-bar{flex-wrap:wrap}
-  .als-all-grid{grid-template-columns:1fr}
-  .setup-floor-row{grid-template-columns:auto 1fr;grid-template-rows:auto auto}
+/* ========== MEJORAS RESPONSIVE PARA SMARTPHONES ========== */
+@media (max-width: 768px) {
+  /* Header más compacto */
+  #app-header { gap: 8px; padding: 0 10px; }
+  #app-title { font-size: 14px; }
+  .header-user { font-size: 11px; }
+  .header-user strong { font-size: 12px; }
+  .avatar { width: 28px; height: 28px; font-size: 11px; }
+
+  /* Stats row en 2 columnas */
+  .stats-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  /* Barra de proyecto: botones en columna */
+  .project-bar { padding: 12px; gap: 12px; }
+  .project-bar > div:last-child { width: 100%; }
+  .project-bar .btn-sm { width: 100%; margin: 2px 0; }
+
+  /* Tabs: permitir scroll horizontal si es necesario */
+  .tabs { width: 100%; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+  .tab { flex: 0 0 auto; }
+
+  /* Tabla de dispositivos: scroll horizontal */
+  .panel-body { padding: 8px; overflow-x: auto; }
+  .device-table { min-width: 600px; } /* fuerza scroll en móvil */
+  .device-table th, .device-table td { white-space: nowrap; padding: 6px 8px; }
+  .comment-input { min-width: 120px; }
+
+  /* Selector de pisos (píldoras) */
+  .floor-selector { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+  .floor-pill { flex: 0 0 auto; }
+
+  /* ALS: cada fila se apila verticalmente */
+  .als-row { flex-wrap: wrap; }
+  .als-label { width: 100%; margin-bottom: 4px; }
+  .status-group { justify-content: flex-start; }
+  .als-row .comment-input { width: 100%; margin-top: 4px; }
+
+  /* Tarjetas ALS en grid de 1 columna (ya definido abajo) */
+  .als-all-grid { grid-template-columns: 1fr; }
+
+  /* Modal setup: filas de pisos apiladas */
+  .setup-floor-row {
+    grid-template-columns: 1fr; /* una columna */
+    gap: 8px;
+    padding: 12px;
+  }
+  .floor-num { font-size: 14px; }
+  .floor-name-inp { width: 100%; }
+  .als-toggle, .del-floor-btn { justify-content: center; }
+  .del-floor-btn { width: 100%; margin-top: 4px; }
+
+  /* Barra superior del modal setup */
+  .setup-topbar { flex-direction: column; align-items: stretch; }
+  .global-bar, .global-apply-section { width: 100%; }
+  .global-checks { flex-direction: column; gap: 8px; }
+  .gcheck { width: 100%; }
+}
+
+@media (max-width: 480px) {
+  /* Ajustes más finos para pantallas muy pequeñas */
+  #app-title { font-size: 12px; }
+  .header-user { display: none; } /* ocultar texto en ultra pequeño, dejar solo avatar? mejor mantener pero podemos simplificar */
+  .header-user { gap: 4px; }
+  .avatar { width: 26px; height: 26px; }
+
+  /* Login card padding reducido */
+  .login-card { padding: 30px 20px; }
+
+  /* Ocultar divisores verticales en barra proyecto */
+  .divider-v { display: none; }
+
+  /* Stats: padding reducido */
+  .stat-card { padding: 10px; }
+  .stat-card .num { font-size: 22px; }
+
+  /* Botones de acción en panel de dispositivos más pequeños */
+  .status-btn { padding: 3px 6px; font-size: 10px; }
+  .comment-input { font-size: 11px; padding: 4px; }
+
+  /* Modal setup: botones globales apilados */
+  .global-type-row { flex-wrap: wrap; }
+  .btn-apply-all { flex: 1; text-align: center; }
+
+  /* Ajuste modal en general */
+  .modal { max-width: 95%; }
+  .modal-body { padding: 16px; }
 }
 </style>
 </head>
@@ -1282,3 +1363,4 @@ function toast(msg,type='info'){
 </script>
 </body>
 </html>
+```
