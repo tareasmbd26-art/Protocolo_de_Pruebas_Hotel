@@ -1054,7 +1054,7 @@ function exportToExcel(){
 }
 
 /* ═══════════════════════════════════════════════
-   PDF
+   PDF (MEJORADO: incluye nombre de hoja por grupo)
 ═══════════════════════════════════════════════ */
 function exportToPDF(){
   toast('Generando PDF...','info');
@@ -1101,11 +1101,22 @@ function exportToPDF(){
       </div>
   `;
 
-  // Inputs section
+  // ---------- INPUTS SECTION (agrupado por hoja) ----------
   if (state.devices.inputs.length > 0) {
     pdfContent += `<div style="margin-bottom: 30px;">
-      <h2 style="font-size: 16px; margin: 0 0 12px 0; padding: 8px 15px; background: linear-gradient(135deg, #0066ff, #00d4ff); color: white; border-radius: 6px; font-weight: 600;">📥 INPUTS</h2>
-      <table style="width: 100%; border-collapse: collapse; font-size: 9px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;">
+      <h2 style="font-size: 16px; margin: 0 0 12px 0; padding: 8px 15px; background: linear-gradient(135deg, #0066ff, #00d4ff); color: white; border-radius: 6px; font-weight: 600;">📥 INPUTS</h2>`;
+
+    // Agrupar por sheet
+    const inputsBySheet = {};
+    state.devices.inputs.forEach(d => {
+      const sheet = d.sheet || 'Sin hoja';
+      if (!inputsBySheet[sheet]) inputsBySheet[sheet] = [];
+      inputsBySheet[sheet].push(d);
+    });
+
+    for (const [sheet, devices] of Object.entries(inputsBySheet)) {
+      pdfContent += `<h3 style="font-size: 14px; margin: 15px 0 8px 0; color: #0066ff;">📄 ${sheet}</h3>`;
+      pdfContent += `<table style="width: 100%; border-collapse: collapse; font-size: 9px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;">
         <tr style="background: linear-gradient(135deg, #4a90e2, #67b8de); color: white;">
           <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600;">Loop</th>
           <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600;">Addr</th>
@@ -1116,31 +1127,43 @@ function exportToPDF(){
           <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600;">Comentarios</th>
         </tr>`;
 
-    state.devices.inputs.forEach((d, idx) => {
-      const r = getResult('inputs', d.id) || {};
-      const fStatus = r.status === 'F' ? '✓' : '';
-      const nfStatus = r.status === 'NF' ? '✗' : '';
-      const bgColor = idx % 2 === 0 ? '#ffffff' : '#f8f9fa';
-      const fColor = r.status === 'F' ? '#28a745' : '#dee2e6';
-      const nfColor = r.status === 'NF' ? '#dc3545' : '#dee2e6';
-      pdfContent += `<tr style="background: ${bgColor};">
-        <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.loop || '—'}</td>
-        <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.address || '—'}</td>
-        <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.type || '—'}</td>
-        <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.description || '—'}</td>
-        <td style="border: 1px solid #ddd; padding: 6px 8px; text-align: center; font-weight: bold; color: ${fColor}; font-size: 14px;">${fStatus}</td>
-        <td style="border: 1px solid #ddd; padding: 6px 8px; text-align: center; font-weight: bold; color: ${nfColor}; font-size: 14px;">${nfStatus}</td>
-        <td style="border: 1px solid #ddd; padding: 6px 8px; color: #6c757d;">${r.comment || ''}</td>
-      </tr>`;
-    });
-    pdfContent += `</table></div>`;
+      devices.forEach((d, idx) => {
+        const r = getResult('inputs', d.id) || {};
+        const fStatus = r.status === 'F' ? '✓' : '';
+        const nfStatus = r.status === 'NF' ? '✗' : '';
+        const bgColor = idx % 2 === 0 ? '#ffffff' : '#f8f9fa';
+        const fColor = r.status === 'F' ? '#28a745' : '#dee2e6';
+        const nfColor = r.status === 'NF' ? '#dc3545' : '#dee2e6';
+        pdfContent += `<tr style="background: ${bgColor};">
+          <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.loop || '—'}</td>
+          <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.address || '—'}</td>
+          <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.type || '—'}</td>
+          <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.description || '—'}</td>
+          <td style="border: 1px solid #ddd; padding: 6px 8px; text-align: center; font-weight: bold; color: ${fColor}; font-size: 14px;">${fStatus}</td>
+          <td style="border: 1px solid #ddd; padding: 6px 8px; text-align: center; font-weight: bold; color: ${nfColor}; font-size: 14px;">${nfStatus}</td>
+          <td style="border: 1px solid #ddd; padding: 6px 8px; color: #6c757d;">${r.comment || ''}</td>
+        </tr>`;
+      });
+      pdfContent += `</table>`;
+    }
+    pdfContent += `</div>`;
   }
 
-  // Outputs section
+  // ---------- OUTPUTS SECTION (agrupado por hoja) ----------
   if (state.devices.outputs.length > 0) {
     pdfContent += `<div style="margin-bottom: 30px;">
-      <h2 style="font-size: 16px; margin: 0 0 12px 0; padding: 8px 15px; background: linear-gradient(135deg, #00b894, #00cec9); color: white; border-radius: 6px; font-weight: 600;">📤 OUTPUTS</h2>
-      <table style="width: 100%; border-collapse: collapse; font-size: 9px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;">
+      <h2 style="font-size: 16px; margin: 0 0 12px 0; padding: 8px 15px; background: linear-gradient(135deg, #00b894, #00cec9); color: white; border-radius: 6px; font-weight: 600;">📤 OUTPUTS</h2>`;
+
+    const outputsBySheet = {};
+    state.devices.outputs.forEach(d => {
+      const sheet = d.sheet || 'Sin hoja';
+      if (!outputsBySheet[sheet]) outputsBySheet[sheet] = [];
+      outputsBySheet[sheet].push(d);
+    });
+
+    for (const [sheet, devices] of Object.entries(outputsBySheet)) {
+      pdfContent += `<h3 style="font-size: 14px; margin: 15px 0 8px 0; color: #00b894;">📄 ${sheet}</h3>`;
+      pdfContent += `<table style="width: 100%; border-collapse: collapse; font-size: 9px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;">
         <tr style="background: linear-gradient(135deg, #00b894, #00cec9); color: white;">
           <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600;">Loop</th>
           <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600;">Addr</th>
@@ -1151,27 +1174,29 @@ function exportToPDF(){
           <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600;">Comentarios</th>
         </tr>`;
 
-    state.devices.outputs.forEach((d, idx) => {
-      const r = getResult('outputs', d.id) || {};
-      const fStatus = r.status === 'F' ? '✓' : '';
-      const nfStatus = r.status === 'NF' ? '✗' : '';
-      const bgColor = idx % 2 === 0 ? '#ffffff' : '#f8f9fa';
-      const fColor = r.status === 'F' ? '#28a745' : '#dee2e6';
-      const nfColor = r.status === 'NF' ? '#dc3545' : '#dee2e6';
-      pdfContent += `<tr style="background: ${bgColor};">
-        <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.loop || '—'}</td>
-        <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.address || '—'}</td>
-        <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.type || '—'}</td>
-        <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.description || '—'}</td>
-        <td style="border: 1px solid #ddd; padding: 6px 8px; text-align: center; font-weight: bold; color: ${fColor}; font-size: 14px;">${fStatus}</td>
-        <td style="border: 1px solid #ddd; padding: 6px 8px; text-align: center; font-weight: bold; color: ${nfColor}; font-size: 14px;">${nfStatus}</td>
-        <td style="border: 1px solid #ddd; padding: 6px 8px; color: #6c757d;">${r.comment || ''}</td>
-      </tr>`;
-    });
-    pdfContent += `</table></div>`;
+      devices.forEach((d, idx) => {
+        const r = getResult('outputs', d.id) || {};
+        const fStatus = r.status === 'F' ? '✓' : '';
+        const nfStatus = r.status === 'NF' ? '✗' : '';
+        const bgColor = idx % 2 === 0 ? '#ffffff' : '#f8f9fa';
+        const fColor = r.status === 'F' ? '#28a745' : '#dee2e6';
+        const nfColor = r.status === 'NF' ? '#dc3545' : '#dee2e6';
+        pdfContent += `<tr style="background: ${bgColor};">
+          <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.loop || '—'}</td>
+          <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.address || '—'}</td>
+          <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.type || '—'}</td>
+          <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.description || '—'}</td>
+          <td style="border: 1px solid #ddd; padding: 6px 8px; text-align: center; font-weight: bold; color: ${fColor}; font-size: 14px;">${fStatus}</td>
+          <td style="border: 1px solid #ddd; padding: 6px 8px; text-align: center; font-weight: bold; color: ${nfColor}; font-size: 14px;">${nfStatus}</td>
+          <td style="border: 1px solid #ddd; padding: 6px 8px; color: #6c757d;">${r.comment || ''}</td>
+        </tr>`;
+      });
+      pdfContent += `</table>`;
+    }
+    pdfContent += `</div>`;
   }
 
-  // Audio/Luces/Sirenas section
+  // ---------- AUDIO / LUCES / SIRENAS (sin cambios, no requiere agrupar por hoja) ----------
   const activeFloors = state.floors.filter(f => f.hasAudio || f.hasLights || f.hasSirens);
   if (activeFloors.length > 0) {
     pdfContent += `<div style="margin-bottom: 30px;">
@@ -1361,4 +1386,3 @@ function toast(msg,type='info'){
 </script>
 </body>
 </html>
-```
