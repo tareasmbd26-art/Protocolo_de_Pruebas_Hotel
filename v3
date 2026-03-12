@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Protocolo de Pruebas Hoteles</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg:#0f1117;--bg2:#161b27;--bg3:#1e2535;--border:#2a3550;
+  --accent:#00d4ff;--accent2:#0066ff;--accent3:#00ff88;
+  --danger:#ff4455;--warn:#ffaa00;
+  --text:#e0e8ff;--text2:#8899bb;--text3:#556688;
+  --card:#1a2236;--shadow:0 4px 24px rgba(0,0,0,.4);
+  --radius:8px;--green:#00ff88;--red:#ff4455;--yellow:#ffaa00;
+  --header-h:60px;
+}
+[data-theme="light"]{
+  --bg:#f0f4ff;--bg2:#e4eaf8;--bg3:#d8e0f0;--border:#b0bcd8;
+  --accent:#0055cc;--accent2:#0033aa;--accent3:#007755;
+  --danger:#cc2233;--warn:#cc8800;
+  --text:#111827;--text2:#334466;--text3:#556688;
+  --card:#fff;--shadow:0 4px 24px rgba(0,0,40,.12);
+  --green:#007755;--red:#cc2233;--yellow:#cc8800;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ── HEADER ── */
+#app-header{position:fixed;top:0;left:0;right:0;z-index:1000;height:var(--header-h);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px;box-shadow:0 2px 16px rgba(0,0,0,.3)}
+#app-logo{height:36px;width:36px;object-fit:contain;border-radius:6px;cursor:pointer}
+#app-logo-placeholder{height:36px;width:36px;background:linear-gradient(135deg,var(--accent2),var(--accent));border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;color:#fff;cursor:pointer}
+#app-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:18px;color:var(--accent);letter-spacing:1px;text-transform:uppercase;flex:1;white-space:nowrap}
+#app-title span{color:var(--text2);font-weight:500}
+.header-user{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)}
+.header-user strong{color:var(--text);font-size:14px}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent3));display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;color:#fff}
+#gear-btn{width:36px;height:36px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .2s}
+#gear-btn:hover{background:var(--border);color:var(--accent);transform:rotate(45deg)}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh}.screen.active{display:block}
+#screen-login{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+#screen-main{padding-top:calc(var(--header-h) + 20px);padding-bottom:40px}
+
+/* ── LOGIN ── */
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:48px 40px;width:100%;max-width:420px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.login-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent2),var(--accent),var(--accent3))}
+.login-logo-wrap{text-align:center;margin-bottom:32px}
+.login-logo-wrap .big-logo{width:72px;height:72px;border-radius:16px;background:linear-gradient(135deg,var(--accent2),var(--accent));display:inline-flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:28px;color:#fff;margin-bottom:16px}
+.login-logo-wrap h1{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px;color:var(--text);text-transform:uppercase;letter-spacing:2px}
+.login-logo-wrap p{color:var(--text2);font-size:12px;margin-top:4px;letter-spacing:1px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.form-group input,.form-group select{width:100%;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:14px;font-family:'Inter',sans-serif;transition:border-color .2s,box-shadow .2s}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,212,255,.12)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;border-radius:var(--radius);font-family:'Rajdhani',sans-serif;font-weight:600;font-size:14px;letter-spacing:.5px;cursor:pointer;border:none;transition:all .2s;text-transform:uppercase}
+.btn-primary{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;width:100%;padding:12px}
+.btn-primary:hover{filter:brightness(1.15);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,100,255,.35)}
+.btn-secondary{background:var(--bg3);border:1px solid var(--border);color:var(--text2)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn-success{background:rgba(0,255,136,.15);border:1px solid var(--accent3);color:var(--accent3)}
+.btn-success:hover{background:rgba(0,255,136,.25)}
+.btn-danger{background:rgba(255,68,85,.15);border:1px solid var(--danger);color:var(--danger)}
+.btn-danger:hover{background:rgba(255,68,85,.25)}
+.btn-warn{background:rgba(255,170,0,.15);border:1px solid var(--warn);color:var(--warn)}
+.btn-warn:hover{background:rgba(255,170,0,.25)}
+.btn-pdf{background:rgba(255,68,85,.15);border:1px solid #ff6677;color:#ff6677}
+.btn-pdf:hover{background:rgba(255,68,85,.3)}
+.btn-sm{padding:6px 12px;font-size:12px}.btn-xs{padding:4px 8px;font-size:11px}
+
+/* ── MAIN ── */
+.main-container{max-width:1400px;margin:0 auto;padding:0 20px}
+.project-bar{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.project-info-item{display:flex;flex-direction:column;gap:2px}
+.project-info-item label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+.project-info-item span{font-size:14px;font-weight:600;color:var(--text)}
+.project-info-item span.mono{font-family:'Share Tech Mono',monospace;color:var(--accent)}
+.divider-v{width:1px;height:40px;background:var(--border)}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--bg2);padding:4px;border-radius:var(--radius);width:fit-content}
+.tab{padding:8px 18px;border-radius:6px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:13px;letter-spacing:.5px;text-transform:uppercase;color:var(--text2);transition:all .2s;border:none;background:transparent}
+.tab.active{background:var(--accent2);color:#fff}
+.tab:hover:not(.active){color:var(--text);background:var(--bg3)}
+
+/* ── PANELS ── */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden}
+.panel-header{padding:14px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);background:var(--bg2);cursor:pointer}
+.panel-header h3{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;text-transform:uppercase;letter-spacing:1px;flex:1}
+.panel-header .badge{padding:2px 8px;border-radius:20px;font-size:11px;font-family:'Share Tech Mono',monospace;background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+.panel-header .chevron{transition:transform .2s;font-size:12px;color:var(--text3)}
+.panel-header.collapsed .chevron{transform:rotate(-90deg)}
+.panel-body{padding:16px 20px}.panel-body.hidden{display:none}
+
+/* ── FLOOR PILLS ── */
+.floor-selector{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.floor-pill{padding:6px 16px;border-radius:20px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:13px;border:1px solid var(--border);color:var(--text2);background:var(--bg2);transition:all .2s;position:relative}
+.floor-pill:hover:not(.active){border-color:var(--accent);color:var(--accent)}
+.floor-pill .status-dot{position:absolute;top:-3px;right:-3px;width:8px;height:8px;border-radius:50%;background:var(--text3);border:2px solid var(--bg)}
+.floor-pill .status-dot.partial{background:var(--warn)}.floor-pill .status-dot.complete{background:var(--green)}
+
+/* ── DEVICE TABLE ── */
+.device-table{width:100%;border-collapse:collapse}
+.device-table th{padding:8px 12px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3);border-bottom:1px solid var(--border);background:var(--bg2)}
+.device-table td{padding:8px 12px;border-bottom:1px solid rgba(42,53,80,.5);font-size:13px;vertical-align:middle}
+.device-table tr:last-child td{border-bottom:none}
+.device-table tr:hover td{background:rgba(0,100,255,.04)}
+.device-table td.mono{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--accent)}
+.device-table td.desc{color:var(--text);max-width:300px}
+.device-table td.type-cell{font-size:11px;color:var(--text3);white-space:nowrap}
+
+/* ── STATUS BUTTONS ── */
+.status-group{display:flex;gap:4px;align-items:center}
+.status-btn{padding:4px 10px;border-radius:4px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;border:1.5px solid transparent;transition:all .15s;letter-spacing:.5px}
+.status-btn.F{border-color:var(--green);color:var(--green);background:transparent}
+.status-btn.F.active{background:var(--green);color:#001a0e}
+.status-btn.NF{border-color:var(--red);color:var(--red);background:transparent}
+.status-btn.NF.active{background:var(--red);color:#fff}
+.comment-input{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:4px 8px;color:var(--text);font-size:12px;font-family:'Inter',sans-serif;width:100%;min-width:150px}
+.comment-input:focus{outline:none;border-color:var(--accent)}
+
+/* ── PROGRESS / STATS ── */
+.progress-wrap{margin-bottom:20px}
+.progress-label{display:flex;justify-content:space-between;margin-bottom:6px}
+.progress-label span{font-size:12px;color:var(--text2)}
+.progress-label strong{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--accent)}
+.progress-bar-bg{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.progress-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent2),var(--accent3));transition:width .4s ease}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
+.stat-card.green::before{background:var(--green)}.stat-card.red::before{background:var(--red)}
+.stat-card.yellow::before{background:var(--yellow)}.stat-card.blue::before{background:var(--accent)}
+.stat-card .num{font-family:'Share Tech Mono',monospace;font-size:28px;font-weight:700}
+.stat-card.green .num{color:var(--green)}.stat-card.red .num{color:var(--red)}
+.stat-card.yellow .num{color:var(--yellow)}.stat-card.blue .num{color:var(--accent)}
+.stat-card .lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+
+/* ── MODALS ── */
+.modal-overlay{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:12px;width:100%;max-width:480px;box-shadow:0 24px 64px rgba(0,0,0,.5);position:relative;overflow:hidden}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+.modal-header{padding:20px 24px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
+.modal-header h2{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:18px;text-transform:uppercase;letter-spacing:1px;flex:1}
+.modal-close{width:28px;height:28px;border-radius:6px;cursor:pointer;background:var(--bg2);border:1px solid var(--border);color:var(--text2);font-size:16px;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{color:var(--danger);border-color:var(--danger)}
+.modal-body{padding:20px 24px}.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+
+/* ── SETTINGS ── */
+.settings-section{margin-bottom:24px}
+.settings-section h4{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(42,53,80,.4);gap:12px}
+.settings-row:last-child{border-bottom:none}
+.settings-row label{font-size:13px;color:var(--text)}
+.theme-btns{display:flex;gap:4px}
+.theme-btn{padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-family:'Rajdhani',sans-serif;font-weight:600;border:1px solid var(--border);color:var(--text2);background:var(--bg2);transition:all .15s}
+.theme-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.08)}
+.logo-upload-wrap{display:flex;align-items:center;gap:12px}
+.current-logo{width:48px;height:48px;border-radius:8px;object-fit:contain;border:1px solid var(--border)}
+#logo-input{display:none}
+
+/* ── SETUP MODAL — PISOS ── */
+/* ── SETUP MODAL — PISOS ── NEW GLOBAL APPLY ── */
+.setup-topbar{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:16px;display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
+.global-apply-section{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:240px}
+.global-apply-title{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;display:block}
+.global-type-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(42,53,80,.4)}
+.global-type-row:last-child{border-bottom:none}
+.global-type-label{font-size:12px;color:var(--text2);flex:1;font-weight:600}
+.btn-apply-all{padding:3px 10px;border-radius:4px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:11px;letter-spacing:.5px;border:1.5px solid;transition:all .15s;background:transparent}
+.btn-apply-all.on{border-color:var(--accent3);color:var(--accent3)}
+.btn-apply-all.on:hover{background:rgba(0,255,136,.15)}
+.btn-apply-all.off{border-color:var(--danger);color:var(--danger)}
+.btn-apply-all.off:hover{background:rgba(255,68,85,.15)}
+.setup-topbar .form-group{margin:0;flex:0 0 auto}
+.setup-topbar .form-group label{color:var(--text3);font-size:10px}
+.setup-topbar input[type="number"]{width:90px;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px}
+.setup-topbar input[type="number"]:focus{outline:none;border-color:var(--accent)}
+.global-bar{display:flex;flex-direction:column;gap:6px;flex:1;min-width:200px}
+.global-bar-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px}
+.global-checks{display:flex;gap:14px;flex-wrap:wrap}
+.gcheck{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);cursor:pointer;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);transition:all .15s}
+.gcheck:hover{border-color:var(--accent);color:var(--accent)}
+.gcheck input{accent-color:var(--accent2);width:13px;height:13px;cursor:pointer;pointer-events:none}
+
+/* Floor row in setup */
+.setup-floor-list{display:flex;flex-direction:column;gap:6px}
+.setup-floor-row{display:grid;grid-template-columns:auto 1fr auto auto auto auto;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;transition:border-color .2s}
+.setup-floor-row:hover{border-color:var(--border)}
+.floor-num{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--accent);min-width:40px}
+.floor-name-inp{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:5px 9px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;width:100%}
+.floor-name-inp:focus{outline:none;border-color:var(--accent)}
+.als-toggle{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:5px;border:1.5px solid var(--border);cursor:pointer;font-size:11px;font-family:'Rajdhani',sans-serif;font-weight:700;color:var(--text3);background:transparent;transition:all .15s;white-space:nowrap}
+.als-toggle.on-audio{border-color:var(--accent2);color:var(--accent2);background:rgba(0,102,255,.1)}
+.als-toggle.on-lights{border-color:var(--yellow);color:var(--yellow);background:rgba(255,170,0,.08)}
+.als-toggle.on-sirens{border-color:var(--red);color:var(--red);background:rgba(255,68,85,.08)}
+.als-toggle:hover{filter:brightness(1.3)}
+.del-floor-btn{width:26px;height:26px;border-radius:5px;background:transparent;border:1px solid var(--border);color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s;flex-shrink:0}
+.del-floor-btn:hover{border-color:var(--danger);color:var(--danger)}
+.add-floor-btn{width:100%;padding:10px;background:var(--bg2);border:2px dashed var(--border);border-radius:8px;color:var(--text3);font-family:'Rajdhani',sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px}
+.add-floor-btn:hover{border-color:var(--accent3);color:var(--accent3)}
+
+/* ── ALS TAB ── */
+.als-info-box{background:rgba(0,100,255,.07);border:1px solid rgba(0,100,255,.2);border-radius:8px;padding:14px 18px;margin-bottom:20px;font-size:13px;color:var(--text2);line-height:1.7}
+.als-info-box strong{color:var(--accent)}
+.als-controls{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.als-controls label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px}
+.als-controls select{padding:7px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;cursor:pointer}
+.als-controls select:focus{outline:none;border-color:var(--accent)}
+.sandwich-wrap{display:flex;flex-direction:column;gap:10px;max-width:680px;margin:0 auto 32px auto}
+.sw-floor-card{border-radius:10px;border:2px solid var(--border);background:var(--card);overflow:hidden;transition:all .2s}
+.sw-floor-card.activation-floor{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,212,255,.15)}
+.sw-floor-card.affected-floor{border-color:var(--accent3);box-shadow:0 0 0 2px rgba(0,255,136,.08)}
+.sw-floor-header{padding:12px 16px;display:flex;align-items:center;gap:10px;background:var(--bg2)}
+.sw-floor-header h4{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.5px;flex:1}
+.sw-badge{padding:2px 8px;border-radius:12px;font-size:10px;font-family:'Share Tech Mono',monospace;border:1px solid;letter-spacing:.5px}
+.sw-badge.activation{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.1)}
+.sw-badge.affected{border-color:var(--accent3);color:var(--accent3);background:rgba(0,255,136,.08)}
+.sw-floor-body{padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.sw-device-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sw-device-label{font-size:13px;color:var(--text2)}
+.als-all-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.als-floor-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.als-floor-card h4{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;color:var(--text)}
+.als-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(42,53,80,.5);gap:8px}
+.als-row:last-child{border-bottom:none}
+.als-label{font-size:12px;color:var(--text2);flex:1}
+
+/* ── CONFIRM DIALOG ── */
+.confirm-modal .modal-header h2{color:var(--warn)}
+.confirm-modal::before{background:linear-gradient(90deg,var(--warn),var(--danger))}
+.confirm-body-text{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:4px}
+.confirm-body-text strong{color:var(--text)}
+
+/* ── TOAST ── */
+#toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 16px;border-radius:8px;font-size:13px;background:var(--card);border:1px solid var(--border);box-shadow:var(--shadow);max-width:340px;animation:slideIn .3s ease;display:flex;gap:10px;align-items:center}
+.toast.success{border-color:var(--green)}.toast.error{border-color:var(--red)}.toast.info{border-color:var(--accent)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+.empty-state{text-align:center;padding:48px;color:var(--text3);font-size:14px}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+
+/* ── PRINT ── */
+@media print {
+  body{background:#fff!important;color:#000!important}
+  #app-header,.project-bar .btn,.project-bar .divider-v,.tabs,.floor-selector,
+  #toast-container,.modal-overlay,button.status-btn:not(.active),
+  .comment-input,.btn,#gear-btn{display:none!important}
+  .screen{display:block!important}
+  #screen-main{padding-top:0!important}
+  .panel{break-inside:avoid;border:1px solid #ccc;margin-bottom:8px}
+  .panel-header{background:#e8eaf6!important;color:#000!important}
+  .panel-header h3{color:#000!important}
+  .panel-body.hidden{display:block!important}
+  .device-table th{background:#e8eaf6!important;color:#000!important}
+  .device-table td{color:#000!important;font-size:11px}
+  .status-btn.active.F{background:#c8f5e0!important;border-color:#00aa55!important;color:#005522!important}
+  .status-btn.active.NF{background:#fdd!important;border-color:#cc2233!important;color:#aa0011!important}
+  .stats-row,.progress-wrap{display:none!important}
+  .sw-floor-card{border:1px solid #ccc!important;box-shadow:none!important}
+  .sw-floor-header{background:#eee!important}
+  .print-header{display:block!important}
+  .als-all-grid{grid-template-columns:repeat(3,1fr)!important}
+}
+.print-header{display:none;padding:12px 0 8px;border-bottom:2px solid #333;margin-bottom:16px}
+.print-header h2{font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:2px}
+.print-header p{font-size:11px;color:#555;margin-top:4px}
+
+@media(max-width:768px){
+  .stats-row{grid-template-columns:1fr 1fr}
+  #app-title{font-size:13px}
+  .project-bar{flex-wrap:wrap}
+  .als-all-grid{grid-template-columns:1fr}
+  .setup-floor-row{grid-template-columns:auto 1fr;grid-template-rows:auto auto}
+}
+</style>
+</head>
+<body data-theme="dark">
+
+<!-- LOGIN -->
+<div id="screen-login" class="screen active">
+  <div class="login-card">
+    <div class="login-logo-wrap">
+      <div id="login-logo-display" class="big-logo">MDM</div>
+      <h1>Protocolo de Pruebas</h1>
+      <p>Sistema de verificación · Hoteles</p>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Nombre</label><input type="text" id="login-nombre" placeholder="Juan" autocomplete="given-name"></div>
+      <div class="form-group"><label>Apellido</label><input type="text" id="login-apellido" placeholder="Pérez" autocomplete="family-name"></div>
+    </div>
+    <div class="form-group"><label>Proyecto</label><input type="text" id="login-proyecto" placeholder="Nombre del proyecto / edificio"></div>
+    <div class="form-group"><label>Cotización</label><input type="text" id="login-cotizacion" placeholder="Número de cotización"></div>
+    <button class="btn btn-primary" onclick="doLogin()" style="margin-top:8px">⚡ INICIAR SESIÓN</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header id="app-header" style="display:none;">
+  <div id="header-logo-wrap">
+    <div id="app-logo-placeholder" onclick="document.getElementById('logo-input').click()" title="Cambiar logo">MDM</div>
+    <img id="app-logo" style="display:none;" alt="Logo">
+  </div>
+  <span id="app-title">Protocolo de Pruebas <span>· Hoteles</span></span>
+  <div class="header-user">
+    <div class="avatar" id="header-avatar">JP</div>
+    <div><strong id="header-name">Juan Pérez</strong><br><span id="header-project" style="font-size:11px;"></span></div>
+  </div>
+  <button id="gear-btn" onclick="openSettings()" title="Configuración">⚙</button>
+  <input type="file" id="logo-input" accept="image/*" onchange="loadLogo(event)" style="display:none;">
+</header>
+
+<!-- MAIN -->
+<div id="screen-main" class="screen">
+  <div class="main-container">
+    <div class="print-header" id="print-header">
+      <h2>Protocolo de Pruebas — Hoteles</h2>
+      <p id="print-meta"></p>
+    </div>
+
+    <!-- PROJECT BAR -->
+    <div class="project-bar" id="project-bar">
+      <div class="project-info-item"><label>Proyecto</label><span id="bar-proyecto">—</span></div>
+      <div class="divider-v"></div>
+      <div class="project-info-item"><label>Cotización</label><span class="mono" id="bar-cotizacion">—</span></div>
+      <div class="divider-v"></div>
+      <div class="project-info-item"><label>Técnico</label><span id="bar-tecnico">—</span></div>
+      <div class="divider-v"></div>
+      <div class="project-info-item"><label>Fecha</label><span class="mono" id="bar-fecha">—</span></div>
+      <div style="flex:1;"></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('xlsx-import').click()">📂 Importar de Excel</button>
+        <button class="btn btn-success btn-sm" onclick="exportToExcel()">📊 Exportar a Excel</button>
+        <button class="btn btn-pdf btn-sm" onclick="exportToPDF()">📄 PDF</button>
+        <button class="btn btn-warn btn-sm" onclick="saveJSON()">💾 GUARDAR</button>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('json-import').click()">📁 CARGAR</button>
+        <button class="btn btn-danger btn-sm" onclick="clearAllData()">🗑 LIMPIAR DATOS</button>
+        <input type="file" id="xlsx-import" accept=".xlsx,.xls" style="display:none;" onchange="importExcel(event)">
+        <input type="file" id="json-import" accept=".json" style="display:none;" onchange="loadJSON(event)">
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Progreso general</span><strong id="progress-pct">0%</strong></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-bar" style="width:0%"></div></div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card blue"><div class="num" id="stat-total">0</div><div class="lbl">Total</div></div>
+      <div class="stat-card green"><div class="num" id="stat-f">0</div><div class="lbl">Funcionan</div></div>
+      <div class="stat-card red"><div class="num" id="stat-nf">0</div><div class="lbl">No Funcionan</div></div>
+      <div class="stat-card yellow"><div class="num" id="stat-pa">0</div><div class="lbl">Sin verificar</div></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('inputs',this)">📥 INPUTS</button>
+      <button class="tab" onclick="switchTab('outputs',this)">📤 OUTPUTS</button>
+      <button class="tab" onclick="switchTab('audio',this)">🔊 AUDIO / LUCES / SIRENAS</button>
+      <button class="btn btn-secondary btn-sm" onclick="openSetupModal()" style="margin-left:auto;">🏗 Configurar pisos</button>
+    </div>
+
+    <div id="tab-inputs"></div>
+    <div id="tab-outputs" style="display:none;"></div>
+    <div id="tab-audio" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- ═══ SETTINGS MODAL ═══ -->
+<div class="modal-overlay hidden" id="modal-settings">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header"><h2>⚙ Configuración</h2><div class="modal-close" onclick="closeModal('modal-settings')">✕</div></div>
+    <div class="modal-body">
+      <div class="settings-section">
+        <h4>Apariencia</h4>
+        <div class="settings-row">
+          <label>Tema</label>
+          <div class="theme-btns">
+            <button class="theme-btn active" id="theme-dark" onclick="setTheme('dark',this)">🌙 Oscuro</button>
+            <button class="theme-btn" id="theme-light" onclick="setTheme('light',this)">☀ Claro</button>
+            <button class="theme-btn" id="theme-system" onclick="setTheme('system',this)">💻 Sistema</button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h4>Logo</h4>
+        <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:10px;">
+          <label>Logo de la aplicación</label>
+          <div class="logo-upload-wrap">
+            <div id="logo-preview-wrap"></div>
+            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('logo-input').click()">📷 Cambiar</button>
+            <button class="btn btn-danger btn-sm" onclick="removeLogo()">✕ Quitar</button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h4>Sesión</h4>
+        <div class="settings-row">
+          <div>
+            <label style="display:block;">Cerrar sesión</label>
+            <span style="font-size:11px;color:var(--text3);">Se le preguntará si desea guardar antes de salir</span>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="doLogout()">🚪 Salir</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary btn-sm" onclick="closeModal('modal-settings')">Cerrar</button></div>
+  </div>
+</div>
+
+<!-- ═══ SETUP / PISOS MODAL ═══ -->
+<div class="modal-overlay hidden" id="modal-setup">
+  <div class="modal" style="max-width:720px;">
+    <div class="modal-header">
+      <h2>🏗 Gestión de Pisos</h2>
+      <div class="modal-close" onclick="closeModal('modal-setup')">✕</div>
+    </div>
+    <div class="modal-body" style="max-height:75vh;overflow-y:auto;padding:16px 20px;">
+
+      <!-- Top: quick-add + global toggles -->
+      <div class="setup-topbar">
+        <!-- Izquierda: agregar + defaults para nuevos pisos -->
+        <div style="display:flex;flex-direction:column;gap:10px;flex:0 0 auto;">
+          <div class="form-group">
+            <label>Agregar pisos rápido</label>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input type="number" id="quick-add-n" min="1" max="50" value="1" style="width:70px;">
+              <button class="btn btn-success btn-sm" onclick="quickAddFloors()" style="white-space:nowrap">＋ Agregar</button>
+            </div>
+          </div>
+          <div class="global-bar">
+            <div class="global-bar-label">Nuevos pisos incluirán:</div>
+            <div class="global-checks">
+              <label class="gcheck"><input type="checkbox" id="gAudio"> 🔊 Bocinas</label>
+              <label class="gcheck"><input type="checkbox" id="gLights"> 💡 Luces</label>
+              <label class="gcheck"><input type="checkbox" id="gSirens"> 🚨 Sirenas</label>
+            </div>
+          </div>
+        </div>
+        <!-- Derecha: aplicar / quitar en todos los pisos existentes -->
+        <div class="global-apply-section">
+          <span class="global-apply-title">⚡ Aplicar / Quitar en <strong style="color:var(--accent)">TODOS</strong> los pisos existentes:</span>
+          <div class="global-type-row">
+            <span class="global-type-label">🔊 Bocinas</span>
+            <button class="btn-apply-all on" onclick="applyTypeAll('audio',true)">✅ Activar todos</button>
+            <button class="btn-apply-all off" onclick="applyTypeAll('audio',false)">❌ Quitar todos</button>
+          </div>
+          <div class="global-type-row">
+            <span class="global-type-label">💡 Luces</span>
+            <button class="btn-apply-all on" onclick="applyTypeAll('lights',true)">✅ Activar todos</button>
+            <button class="btn-apply-all off" onclick="applyTypeAll('lights',false)">❌ Quitar todos</button>
+          </div>
+          <div class="global-type-row">
+            <span class="global-type-label">🚨 Sirenas</span>
+            <button class="btn-apply-all on" onclick="applyTypeAll('sirens',true)">✅ Activar todos</button>
+            <button class="btn-apply-all off" onclick="applyTypeAll('sirens',false)">❌ Quitar todos</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floor list (live, backed by state.floors directly) -->
+      <div class="setup-floor-list" id="setup-floor-list">
+        <div class="empty-state" style="padding:24px;"><div class="icon" style="font-size:32px;">🏗</div><p>No hay pisos. Usa el botón "Agregar" para comenzar.</p></div>
+      </div>
+      <button class="add-floor-btn" onclick="addOneFloor()">＋ Agregar un piso</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-setup')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CONFIRM LOGOUT MODAL ═══ -->
+<div class="modal-overlay hidden" id="modal-confirm-logout">
+  <div class="modal confirm-modal" style="max-width:400px;">
+    <div class="modal-header"><h2>⚠ Cerrar Sesión</h2></div>
+    <div class="modal-body">
+      <p class="confirm-body-text">¿Desea <strong>guardar los datos</strong> antes de cerrar sesión?</p>
+      <p style="font-size:12px;color:var(--text3);margin-top:8px;">Si cierra sin guardar, los datos quedarán en la memoria del navegador pero no en un archivo externo.</p>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between;">
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-confirm-logout')">Cancelar</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-warn btn-sm" onclick="saveAndLogout()">💾 Guardar y Salir</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmLogout()">🚪 Salir sin Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let state = {
+  user: null, project: null, logo: null, theme: 'dark',
+  floors: [],                    // [{id, name, hasAudio, hasLights, hasSirens}]
+  devices: { inputs:[], outputs:[] },
+  results: {},                   // "inputs-id" / "outputs-id" => {status, comment}
+  alsResults: {},                // "floorId-kind" => {status}
+};
+
+/* ═══════════════════════════════════════════════
+   BOOT — always restore session from localStorage
+═══════════════════════════════════════════════ */
+window.addEventListener('load', () => {
+  applySavedTheme();
+  const raw = localStorage.getItem('pph_session');
+  if (raw) {
+    try {
+      const saved = JSON.parse(raw);
+      // Merge carefully so new fields aren't lost
+      state = Object.assign({}, state, saved);
+      // Always keep devices object structure
+      if (!state.devices) state.devices = {inputs:[],outputs:[]};
+      if (!state.results) state.results = {};
+      if (!state.alsResults) state.alsResults = {};
+      if (!state.floors) state.floors = [];
+      if (state.user && state.project) { startApp(); return; }
+      // Has saved data but no active user — show resume hint
+      showResumeBanner();
+    } catch(e) {}
+  }
+  // No session — show login
+});
+
+/* ═══════════════════════════════════════════════
+   SESSION — save EVERYTHING to localStorage on every change
+═══════════════════════════════════════════════ */
+function saveSession() {
+  try { localStorage.setItem('pph_session', JSON.stringify(state)); } catch(e) { toast('Error al guardar en memoria del navegador','error'); }
+}
+
+/* ═══════════════════════════════════════════════
+   LOGIN / LOGOUT
+═══════════════════════════════════════════════ */
+function doLogin() {
+  const nombre   = document.getElementById('login-nombre').value.trim();
+  const apellido = document.getElementById('login-apellido').value.trim();
+  const proyecto = document.getElementById('login-proyecto').value.trim();
+  const cotizacion = document.getElementById('login-cotizacion').value.trim();
+  if (!nombre||!apellido||!proyecto) { toast('Complete todos los campos requeridos','error'); return; }
+  state.user    = {nombre, apellido};
+  // Only update project info — NEVER clear floors/devices/results
+  if (!state.project) state.project = {};
+  state.project.nombre     = proyecto;
+  state.project.cotizacion = cotizacion;
+  if (!state.project.fecha) state.project.fecha = new Date().toLocaleDateString('es-PA');
+  saveSession();
+  startApp();
+}
+
+function startApp() {
+  document.getElementById('screen-login').style.display = 'none';
+  document.getElementById('app-header').style.display   = 'flex';
+  document.getElementById('screen-main').classList.add('active');
+  const u=state.user, p=state.project;
+  document.getElementById('header-avatar').textContent  = u.nombre[0]+u.apellido[0];
+  document.getElementById('header-name').textContent    = u.nombre+' '+u.apellido;
+  document.getElementById('header-project').textContent = p.nombre;
+  document.getElementById('bar-proyecto').textContent   = p.nombre;
+  document.getElementById('bar-cotizacion').textContent = p.cotizacion||'—';
+  document.getElementById('bar-tecnico').textContent    = u.nombre+' '+u.apellido;
+  document.getElementById('bar-fecha').textContent      = p.fecha;
+  document.getElementById('print-meta').textContent     =
+    `Proyecto: ${p.nombre}  |  Cotización: ${p.cotizacion||'—'}  |  Técnico: ${u.nombre} ${u.apellido}  |  Fecha: ${p.fecha}`;
+  if (state.logo) applyLogo(state.logo);
+  applyThemeUI(state.theme);
+  renderAll();
+}
+
+/* Logout — show confirm dialog */
+function doLogout() {
+  closeModal('modal-settings');
+  openModal('modal-confirm-logout');
+}
+function saveAndLogout() {
+  saveJSON();
+  setTimeout(()=>{ closeModal('modal-confirm-logout'); performLogout(); }, 400);
+}
+function confirmLogout() {
+  closeModal('modal-confirm-logout');
+  performLogout();
+}
+function performLogout() {
+  // Keep ALL data — only clear user identity so they can log back in and continue
+  state.user    = null;
+  state.project = null;
+  saveSession();
+  document.getElementById('screen-login').style.display  = 'flex';
+  document.getElementById('screen-main').classList.remove('active');
+  document.getElementById('app-header').style.display    = 'none';
+  // Pre-fill project info so it's easy to resume
+  if (state.project) {
+    document.getElementById('login-proyecto').value   = state.project.nombre||'';
+    document.getElementById('login-cotizacion').value = state.project.cotizacion||'';
+  }
+  document.getElementById('login-nombre').value  = '';
+  document.getElementById('login-apellido').value = '';
+  // Show resume banner if there is saved data
+  showResumeBanner();
+  toast('Sesión cerrada — los datos están guardados en el navegador','info');
+}
+
+function showResumeBanner() {
+  // Remove existing banner
+  const old=document.getElementById('resume-banner'); if(old) old.remove();
+  const hasData = state.floors.length || state.devices.inputs.length || state.devices.outputs.length;
+  if (!hasData || !state.project) return;
+  const card=document.querySelector('.login-card');
+  const banner=document.createElement('div');
+  banner.id='resume-banner';
+  banner.style.cssText='margin-top:14px;padding:10px 14px;background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.3);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.6;';
+  banner.innerHTML=`<span style="color:var(--accent);font-weight:600;">ℹ️ Datos guardados</span><br>Proyecto: <strong style="color:var(--text)">${state.project.nombre}</strong> — ${state.floors.length} piso(s), ${state.devices.inputs.length+state.devices.outputs.length} dispositivos.<br>Ingrese su nombre y apellido para continuar.`;
+  card.appendChild(banner);
+}
+
+/* ═══════════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════════ */
+let currentTab = 'inputs';
+function switchTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  ['inputs','outputs','audio'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display = t===tab?'block':'none';
+  });
+  renderTab(tab);
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER
+═══════════════════════════════════════════════ */
+function renderAll() { updateStats(); renderTab(currentTab); }
+function renderTab(tab) {
+  if (tab==='inputs') renderDeviceTab('inputs');
+  else if (tab==='outputs') renderDeviceTab('outputs');
+  else renderAudioTab();
+}
+
+/* ── Device Tab ── */
+function renderDeviceTab(type) {
+  const el = document.getElementById('tab-'+type);
+  const devices = state.devices[type];
+  if (!devices.length) {
+    el.innerHTML=`<div class="empty-state"><div class="icon">📂</div><p>No hay dispositivos.<br>Importe un Excel con la zonificación.</p></div>`;
+    return;
+  }
+  const byFloor = {};
+  devices.forEach(d=>{ const k=d.floor||'Sin Piso'; if(!byFloor[k]) byFloor[k]=[]; byFloor[k].push(d); });
+  const floors = Object.keys(byFloor).sort((a,b)=>{
+    const na=parseInt(a.replace(/\D/g,'')),nb=parseInt(b.replace(/\D/g,''));
+    return (isNaN(na)?0:na)-(isNaN(nb)?0:nb);
+  });
+  let html=`<div class="floor-selector">`;
+  floors.forEach(f=>{
+    const devs=byFloor[f], filled=devs.filter(d=>getResult(type,d.id)?.status).length;
+    const pct=filled/devs.length;
+    const dot=pct===0?'':pct===1?'complete':'partial';
+    html+=`<div class="floor-pill" onclick="scrollToFloor('${type}','${f}')">${f}<span class="status-dot ${dot}"></span></div>`;
+  });
+  html+=`</div>`;
+  floors.forEach(f=>{
+    const devs=byFloor[f], filled=devs.filter(d=>getResult(type,d.id)?.status).length;
+    html+=`<div class="panel" id="floor-${type}-${CSS.escape(f)}">
+      <div class="panel-header" onclick="togglePanel(this)">
+        <h3>🏢 ${f}</h3>
+        <span class="badge">${filled}/${devs.length} verificados</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="panel-body">
+        <table class="device-table">
+          <thead><tr><th>Loop</th><th>Addr</th><th>Tipo</th><th>Descripción</th>
+            <th style="text-align:center;min-width:50px;">F</th>
+            <th style="text-align:center;min-width:60px;">N-F</th>
+            <th>Comentarios</th></tr></thead>
+          <tbody>`;
+    devs.forEach(d=>{
+      const res=getResult(type,d.id)||{};
+      html+=`<tr>
+        <td class="mono">${d.loop||'—'}</td>
+        <td class="mono">${d.address||'—'}</td>
+        <td class="type-cell">${d.type||'—'}</td>
+        <td class="desc">${d.description||'—'}</td>
+        <td style="text-align:center;"><button class="status-btn F ${res.status==='F'?'active':''}" onclick="setStatus('${type}','${esc(d.id)}','F')">F</button></td>
+        <td style="text-align:center;"><button class="status-btn NF ${res.status==='NF'?'active':''}" onclick="setStatus('${type}','${esc(d.id)}','NF')">N-F</button></td>
+        <td><input class="comment-input" type="text" placeholder="Observación..." value="${(res.comment||'').replace(/"/g,'&quot;')}" onchange="setComment('${type}','${esc(d.id)}',this.value)"></td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div></div>`;
+  });
+  el.innerHTML=html;
+}
+
+/* ── Audio Tab ── */
+function renderAudioTab() {
+  const el=document.getElementById('tab-audio');
+  const activeFloors=state.floors.filter(f=>f.hasAudio||f.hasLights||f.hasSirens);
+  if (!state.floors.length) {
+    el.innerHTML=`<div class="empty-state"><div class="icon">🏗</div><p>Configure los pisos primero.<br><button class="btn btn-primary btn-sm" onclick="openSetupModal()">Configurar Pisos</button></p></div>`;
+    return;
+  }
+  if (!activeFloors.length) {
+    el.innerHTML=`<div class="empty-state"><div class="icon">🔇</div><p>Ningún piso tiene bocinas, luces o sirenas.<br><button class="btn btn-secondary btn-sm" onclick="openSetupModal()">Editar pisos</button></p></div>`;
+    return;
+  }
+
+  let html=`<div class="als-all-grid">`;
+  activeFloors.forEach(f=>{ html+=alsCard(f); });
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+
+function swRow(fid,kind,label){
+  const res=getALSResult(fid,kind)||{};
+  return `<div class="sw-device-row" style="flex-wrap:wrap;gap:8px;">
+    <span class="sw-device-label" style="min-width:180px;">${label}</span>
+    <div class="status-group">
+      <button class="status-btn F ${res.status==='F'?'active':''}" onclick="setALSStatus('${fid}','${kind}','F')">F</button>
+      <button class="status-btn NF ${res.status==='NF'?'active':''}" onclick="setALSStatus('${fid}','${kind}','NF')">N-F</button>
+    </div>
+    <input class="comment-input" type="text" placeholder="Observación..." style="flex:1;min-width:130px;"
+      value="${(res.comment||'').replace(/"/g,'&quot;')}"
+      oninput="setALSComment('${fid}','${kind}',this.value)" onblur="setALSComment('${fid}','${kind}',this.value)">
+  </div>`;
+}
+let _alsSaveT=null;
+function setALSComment(fid,kind,val){
+  const key=`${fid}-${kind}`;
+  if(!state.alsResults[key]) state.alsResults[key]={};
+  state.alsResults[key].comment=val;
+  // Guardado con debounce para no escribir localStorage en cada tecla
+  if(_alsSaveT) clearTimeout(_alsSaveT);
+  _alsSaveT=setTimeout(saveSession,250);
+}
+function alsCard(f){
+  let h=`<div class="als-floor-card"><h4>🏢 ${f.name}</h4>`;
+  if(f.hasAudio){const r=getALSResult(f.id,'audio')||{};h+=`<div class="als-row" style="flex-wrap:wrap;gap:6px;"><span class="als-label" style="min-width:90px;">🔊 Bocinas</span><div class="status-group"><button class="status-btn F ${r.status==='F'?'active':''}" onclick="setALSStatus('${f.id}','audio','F')">F</button><button class="status-btn NF ${r.status==='NF'?'active':''}" onclick="setALSStatus('${f.id}','audio','NF')">N-F</button></div><input class="comment-input" type="text" placeholder="Obs..." style="flex:1;min-width:90px;font-size:11px;" value="${(r.comment||'').replace(/"/g,'&quot;')}" oninput="setALSComment('${f.id}','audio',this.value)" onblur="setALSComment('${f.id}','audio',this.value)"></div>`;}
+  if(f.hasLights){const r=getALSResult(f.id,'lights')||{};h+=`<div class="als-row" style="flex-wrap:wrap;gap:6px;"><span class="als-label" style="min-width:90px;">💡 Luces</span><div class="status-group"><button class="status-btn F ${r.status==='F'?'active':''}" onclick="setALSStatus('${f.id}','lights','F')">F</button><button class="status-btn NF ${r.status==='NF'?'active':''}" onclick="setALSStatus('${f.id}','lights','NF')">N-F</button></div><input class="comment-input" type="text" placeholder="Obs..." style="flex:1;min-width:90px;font-size:11px;" value="${(r.comment||'').replace(/"/g,'&quot;')}" oninput="setALSComment('${f.id}','lights',this.value)" onblur="setALSComment('${f.id}','lights',this.value)"></div>`;}
+  if(f.hasSirens){const r=getALSResult(f.id,'sirens')||{};h+=`<div class="als-row" style="flex-wrap:wrap;gap:6px;"><span class="als-label" style="min-width:90px;">🚨 Sirenas</span><div class="status-group"><button class="status-btn F ${r.status==='F'?'active':''}" onclick="setALSStatus('${f.id}','sirens','F')">F</button><button class="status-btn NF ${r.status==='NF'?'active':''}" onclick="setALSStatus('${f.id}','sirens','NF')">N-F</button></div><input class="comment-input" type="text" placeholder="Obs..." style="flex:1;min-width:90px;font-size:11px;" value="${(r.comment||'').replace(/"/g,'&quot;')}" oninput="setALSComment('${f.id}','sirens',this.value)" onblur="setALSComment('${f.id}','sirens',this.value)"></div>`;}
+  h+=`</div>`;return h;
+}
+
+
+/* ═══════════════════════════════════════════════
+   SETUP MODAL — PISOS (live edit, no "apply" needed)
+═══════════════════════════════════════════════ */
+function openSetupModal() {
+  renderSetupList();
+  openModal('modal-setup');
+}
+
+function renderSetupList() {
+  const el=document.getElementById('setup-floor-list');
+  if(!state.floors.length){
+    el.innerHTML=`<div class="empty-state" style="padding:24px;"><div class="icon" style="font-size:32px;">🏗</div><p>No hay pisos. Usa el botón "Agregar" para comenzar.</p></div>`;
+    return;
+  }
+  let html='';
+  state.floors.forEach((f,i)=>{
+    const aClass='als-toggle'+(f.hasAudio?' on-audio':'');
+    const lClass='als-toggle'+(f.hasLights?' on-lights':'');
+    const sClass='als-toggle'+(f.hasSirens?' on-sirens':'');
+    html+=`<div class="setup-floor-row" id="sfr-${f.id}">
+      <span class="floor-num">#${i+1}</span>
+      <input class="floor-name-inp" type="text" value="${f.name}" onchange="updateFloorName('${f.id}',this.value)" placeholder="Nombre del piso">
+      <button class="${aClass}" onclick="toggleFloorALS('${f.id}','audio')" title="Bocinas">🔊 BOC</button>
+      <button class="${lClass}" onclick="toggleFloorALS('${f.id}','lights')" title="Luces">💡 LUC</button>
+      <button class="${sClass}" onclick="toggleFloorALS('${f.id}','sirens')" title="Sirenas">🚨 SIR</button>
+      <button class="del-floor-btn" onclick="deleteFloor('${f.id}')" title="Eliminar piso">🗑</button>
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+/* Update floor name instantly */
+function updateFloorName(id, val) {
+  const f=state.floors.find(f=>f.id===id);
+  if(f){ f.name=val.trim()||f.name; saveSession(); }
+}
+
+/* Toggle a single ALS property on a single floor */
+function toggleFloorALS(id, kind) {
+  const f=state.floors.find(f=>f.id===id);
+  if(!f) return;
+  if(kind==='audio')  f.hasAudio  = !f.hasAudio;
+  if(kind==='lights') f.hasLights = !f.hasLights;
+  if(kind==='sirens') f.hasSirens = !f.hasSirens;
+  saveSession();
+  renderSetupList();   // re-render just the list
+  updateStats();
+}
+
+/* Delete a floor */
+function deleteFloor(id) {
+  state.floors = state.floors.filter(f=>f.id!==id);
+  saveSession();
+  renderSetupList();
+  updateStats();
+  renderTab('audio');
+}
+
+/* Add N floors quickly */
+function quickAddFloors() {
+  const n=parseInt(document.getElementById('quick-add-n').value)||1;
+  const gAudio=document.getElementById('gAudio').checked;
+  const gLights=document.getElementById('gLights').checked;
+  const gSirens=document.getElementById('gSirens').checked;
+  for(let i=0;i<n;i++) {
+    const num=state.floors.length+1;
+    state.floors.push({id:'f'+num+'x'+(Date.now()%10000+i), name:'PISO '+num, hasAudio:gAudio, hasLights:gLights, hasSirens:gSirens});
+  }
+  saveSession();
+  renderSetupList();
+  updateStats();
+  toast(`${n} piso(s) agregado(s)`,'success');
+}
+
+/* Add a single floor via the bottom button */
+function addOneFloor() {
+  const num=state.floors.length+1;
+  state.floors.push({id:'f'+num+'x'+(Date.now()%10000), name:'PISO '+num, hasAudio:false, hasLights:false, hasSirens:false});
+  saveSession();
+  renderSetupList();
+  updateStats();
+  // Scroll to bottom of list
+  setTimeout(()=>{ const el=document.getElementById('setup-floor-list'); el.lastElementChild?.scrollIntoView({behavior:'smooth'}); },50);
+}
+
+/* Apply OR remove one ALS type from ALL existing floors (bidirectional) */
+function applyTypeAll(kind, val) {
+  if (!state.floors.length) { toast('No hay pisos configurados','error'); return; }
+  state.floors.forEach(f=>{
+    if(kind==='audio')  f.hasAudio  = val;
+    if(kind==='lights') f.hasLights = val;
+    if(kind==='sirens') f.hasSirens = val;
+  });
+  saveSession();
+  renderSetupList();
+  updateStats();
+  const labels={audio:'Bocinas',lights:'Luces',sirens:'Sirenas'};
+  toast(`${val?'✅ Activado':'❌ Quitado'}: ${labels[kind]} en ${state.floors.length} piso(s)`,'success');
+}
+
+/* ═══════════════════════════════════════════════
+   STATUS HELPERS
+═══════════════════════════════════════════════ */
+function esc(id){ return String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+function getResult(type,id){ return state.results[`${type}-${id}`]; }
+function setStatus(type,id,status){
+  const key=`${type}-${id}`;
+  if(!state.results[key]) state.results[key]={};
+  state.results[key].status = state.results[key].status===status?null:status;
+  saveSession(); updateStats(); renderTab(currentTab);
+}
+function setComment(type,id,val){
+  const key=`${type}-${id}`;
+  if(!state.results[key]) state.results[key]={};
+  state.results[key].comment=val; saveSession();
+}
+function getALSResult(fid,kind){ return state.alsResults[`${fid}-${kind}`]; }
+function setALSStatus(fid,kind,status){
+  const key=`${fid}-${kind}`;
+  if(!state.alsResults[key]) state.alsResults[key]={};
+  state.alsResults[key].status = state.alsResults[key].status===status?null:status;
+  saveSession(); updateStats(); renderAudioTab();
+}
+
+/* ═══════════════════════════════════════════════
+   STATS
+═══════════════════════════════════════════════ */
+function updateStats(){
+  const all=[...state.devices.inputs,...state.devices.outputs];
+  let alsTotal=0;
+  state.floors.forEach(f=>{if(f.hasAudio)alsTotal++;if(f.hasLights)alsTotal++;if(f.hasSirens)alsTotal++;});
+  const total=all.length+alsTotal;
+  let F=0,NF=0,filled=0;
+  Object.values(state.results).forEach(r=>{ if(!r?.status) return; filled++; if(r.status==='F')F++; else NF++; });
+  Object.values(state.alsResults).forEach(r=>{ if(!r?.status) return; filled++; if(r.status==='F')F++; else NF++; });
+  const pending=total-filled;
+  const pct=total?Math.round(filled/total*100):0;
+  document.getElementById('stat-total').textContent=total;
+  document.getElementById('stat-f').textContent=F;
+  document.getElementById('stat-nf').textContent=NF;
+  document.getElementById('stat-pa').textContent=pending;
+  document.getElementById('progress-pct').textContent=pct+'%';
+  document.getElementById('progress-bar').style.width=pct+'%';
+}
+
+/* ═══════════════════════════════════════════════
+   EXCEL IMPORT
+═══════════════════════════════════════════════ */
+function importExcel(event){
+  const file=event.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'binary'});
+      let inC=0,outC=0;
+      state.devices.inputs=[]; state.devices.outputs=[];
+      const outputKws=['control','rele','relé','output'];
+      wb.SheetNames.forEach(sName=>{
+        const ws=wb.Sheets[sName];
+        const data=XLSX.utils.sheet_to_json(ws,{defval:''});
+        if(!data.length) return;
+        const sLow=sName.toLowerCase();
+        const isOut=outputKws.some(k=>sLow.includes(k));
+        data.forEach((row,idx)=>{
+          const getVal=(...names)=>{ for(const n of names){ const k=Object.keys(row).find(k=>k.toLowerCase().includes(n)); if(k) return String(row[k]).trim(); } return ''; };
+          const device={
+            id:`${sName}-${idx}`,
+            loop:getVal('loop'),
+            address:getVal('address','addr','direc'),
+            type:getVal('device','type','tipo','dispositivo'),
+            description:getVal('description','descrip','descripcion','ubicacion','desc'),
+            floor:getVal('floor','piso','nivel','level')||sName,
+            sheet:sName,
+          };
+          if(isOut){state.devices.outputs.push(device);outC++;}
+          else{state.devices.inputs.push(device);inC++;}
+        });
+      });
+      saveSession(); renderAll();
+      toast(`Excel importado: ${inC} inputs, ${outC} outputs`,'success');
+    } catch(err){ toast('Error al leer Excel: '+err.message,'error'); }
+    event.target.value='';
+  };
+  reader.readAsBinaryString(file);
+}
+
+/* ═══════════════════════════════════════════════
+   EXCEL EXPORT
+═══════════════════════════════════════════════ */
+function exportToExcel(){
+  const wb=XLSX.utils.book_new();
+  const sumWs=XLSX.utils.aoa_to_sheet([['PROTOCOLO DE PRUEBAS — HOTELES'],[''],
+    ['Proyecto:',state.project?.nombre||''],['Cotización:',state.project?.cotizacion||''],
+    ['Técnico:',(state.user?.nombre||'')+' '+(state.user?.apellido||'')],['Fecha:',state.project?.fecha||''],['']]);
+  XLSX.utils.book_append_sheet(wb,sumWs,'Resumen');
+
+  const inRows=[['Loop','Address','Device Type','Description','Floor','F','N-F','Comentarios']];
+  state.devices.inputs.forEach(d=>{ const r=getResult('inputs',d.id)||{}; inRows.push([d.loop||'',d.address||'',d.type||'',d.description||'',d.floor||'',r.status==='F'?'✔':'',r.status==='NF'?'✔':'',r.comment||'']); });
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(inRows),'Inputs');
+
+  const outRows=[['Loop','Address','Device Type','Description','Floor','F','N-F','Comentarios']];
+  state.devices.outputs.forEach(d=>{ const r=getResult('outputs',d.id)||{}; outRows.push([d.loop||'',d.address||'',d.type||'',d.description||'',d.floor||'',r.status==='F'?'✔':'',r.status==='NF'?'✔':'',r.comment||'']); });
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(outRows),'Outputs');
+
+  const alsRows=[['Piso','Tipo','F','N-F','Observaciones']];
+  const af=state.floors.filter(f=>f.hasAudio||f.hasLights||f.hasSirens);
+  af.forEach((f,idx)=>{
+    ['audio','lights','sirens'].forEach(kind=>{
+      const has=kind==='audio'?f.hasAudio:kind==='lights'?f.hasLights:f.hasSirens; if(!has) return;
+      const res=getALSResult(f.id,kind)||{};
+      const label=kind==='audio'?'Bocinas':kind==='lights'?'Luces Estroboscópicas':'Sirenas';
+      alsRows.push([f.name,label,res.status==='F'?'✔':'',res.status==='NF'?'✔':'',res.comment||'']);
+    });
+  });
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(alsRows),'Audio-Luces-Sirenas');
+
+  XLSX.writeFile(wb,`Protocolo_${(state.project?.nombre||'proyecto').replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast('Exportado a Excel','success');
+}
+
+/* ═══════════════════════════════════════════════
+   PDF
+═══════════════════════════════════════════════ */
+function exportToPDF(){
+  toast('Generando PDF...','info');
+
+  // Build the PDF content
+  const projectName = state.project?.nombre || '—';
+  const cotizacion = state.project?.cotizacion || '—';
+  const tecnico = state.user ? `${state.user.nombre} ${state.user.apellido}` : '—';
+  const fecha = state.project?.fecha || '—';
+  const logoUrl = state.logo || '';
+
+  // Generate logo HTML if exists
+  const logoHtml = logoUrl ? `<img src="${logoUrl}" style="height: 60px; margin-bottom: 15px;">` : '';
+
+  let pdfContent = `
+    <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 25px; color: #2c3e50; background: #fff;">
+      <!-- Header with colorful gradient -->
+      <div style="background: linear-gradient(135deg, #0066ff 0%, #00d4ff 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px; color: white;">
+        <div style="text-align: center;">
+          ${logoHtml}
+          <h1 style="margin: 0; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700;">Protocolo de Pruebas — Hoteles</h1>
+        </div>
+      </div>
+
+      <!-- Info bar -->
+      <div style="background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #0066ff;">
+        <table style="width: 100%; font-size: 11px; color: #495057;">
+          <tr>
+            <td style="padding: 4px 8px;"><strong style="color: #0066ff;">Proyecto:</strong> ${projectName}</td>
+            <td style="padding: 4px 8px;"><strong style="color: #0066ff;">Cotización:</strong> ${cotizacion}</td>
+          </tr>
+          <tr>
+            <td style="padding: 4px 8px;"><strong style="color: #0066ff;">Técnico:</strong> ${tecnico}</td>
+            <td style="padding: 4px 8px;"><strong style="color: #0066ff;">Fecha:</strong> ${fecha}</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Legend with colorful badges -->
+      <div style="background: #f0f7ff; padding: 12px 15px; margin-bottom: 25px; border-radius: 8px; border: 1px solid #cce5ff;">
+        <span style="font-size: 11px; font-weight: 600; color: #0066ff;">LEYENDA:</span>
+        <span style="display: inline-block; background: #28a745; color: white; padding: 2px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; margin-left: 15px;">F = Funciona</span>
+        <span style="display: inline-block; background: #dc3545; color: white; padding: 2px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; margin-left: 8px;">N-F = No Funciona</span>
+      </div>
+  `;
+
+  // Inputs section
+  if (state.devices.inputs.length > 0) {
+    pdfContent += `<div style="margin-bottom: 30px;">
+      <h2 style="font-size: 16px; margin: 0 0 12px 0; padding: 8px 15px; background: linear-gradient(135deg, #0066ff, #00d4ff); color: white; border-radius: 6px; font-weight: 600;">📥 INPUTS</h2>
+      <table style="width: 100%; border-collapse: collapse; font-size: 9px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;">
+        <tr style="background: linear-gradient(135deg, #4a90e2, #67b8de); color: white;">
+          <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600;">Loop</th>
+          <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600;">Addr</th>
+          <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600;">Tipo</th>
+          <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600;">Descripción</th>
+          <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600; width: 50px;">F</th>
+          <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600; width: 50px;">N-F</th>
+          <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600;">Comentarios</th>
+        </tr>`;
+
+    state.devices.inputs.forEach((d, idx) => {
+      const r = getResult('inputs', d.id) || {};
+      const fStatus = r.status === 'F' ? '✓' : '';
+      const nfStatus = r.status === 'NF' ? '✗' : '';
+      const bgColor = idx % 2 === 0 ? '#ffffff' : '#f8f9fa';
+      const fColor = r.status === 'F' ? '#28a745' : '#dee2e6';
+      const nfColor = r.status === 'NF' ? '#dc3545' : '#dee2e6';
+      pdfContent += `<tr style="background: ${bgColor};">
+        <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.loop || '—'}</td>
+        <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.address || '—'}</td>
+        <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.type || '—'}</td>
+        <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.description || '—'}</td>
+        <td style="border: 1px solid #ddd; padding: 6px 8px; text-align: center; font-weight: bold; color: ${fColor}; font-size: 14px;">${fStatus}</td>
+        <td style="border: 1px solid #ddd; padding: 6px 8px; text-align: center; font-weight: bold; color: ${nfColor}; font-size: 14px;">${nfStatus}</td>
+        <td style="border: 1px solid #ddd; padding: 6px 8px; color: #6c757d;">${r.comment || ''}</td>
+      </tr>`;
+    });
+    pdfContent += `</table></div>`;
+  }
+
+  // Outputs section
+  if (state.devices.outputs.length > 0) {
+    pdfContent += `<div style="margin-bottom: 30px;">
+      <h2 style="font-size: 16px; margin: 0 0 12px 0; padding: 8px 15px; background: linear-gradient(135deg, #00b894, #00cec9); color: white; border-radius: 6px; font-weight: 600;">📤 OUTPUTS</h2>
+      <table style="width: 100%; border-collapse: collapse; font-size: 9px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;">
+        <tr style="background: linear-gradient(135deg, #00b894, #00cec9); color: white;">
+          <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600;">Loop</th>
+          <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600;">Addr</th>
+          <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600;">Tipo</th>
+          <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600;">Descripción</th>
+          <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600; width: 50px;">F</th>
+          <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600; width: 50px;">N-F</th>
+          <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600;">Comentarios</th>
+        </tr>`;
+
+    state.devices.outputs.forEach((d, idx) => {
+      const r = getResult('outputs', d.id) || {};
+      const fStatus = r.status === 'F' ? '✓' : '';
+      const nfStatus = r.status === 'NF' ? '✗' : '';
+      const bgColor = idx % 2 === 0 ? '#ffffff' : '#f8f9fa';
+      const fColor = r.status === 'F' ? '#28a745' : '#dee2e6';
+      const nfColor = r.status === 'NF' ? '#dc3545' : '#dee2e6';
+      pdfContent += `<tr style="background: ${bgColor};">
+        <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.loop || '—'}</td>
+        <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.address || '—'}</td>
+        <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.type || '—'}</td>
+        <td style="border: 1px solid #ddd; padding: 6px 8px;">${d.description || '—'}</td>
+        <td style="border: 1px solid #ddd; padding: 6px 8px; text-align: center; font-weight: bold; color: ${fColor}; font-size: 14px;">${fStatus}</td>
+        <td style="border: 1px solid #ddd; padding: 6px 8px; text-align: center; font-weight: bold; color: ${nfColor}; font-size: 14px;">${nfStatus}</td>
+        <td style="border: 1px solid #ddd; padding: 6px 8px; color: #6c757d;">${r.comment || ''}</td>
+      </tr>`;
+    });
+    pdfContent += `</table></div>`;
+  }
+
+  // Audio/Luces/Sirenas section
+  const activeFloors = state.floors.filter(f => f.hasAudio || f.hasLights || f.hasSirens);
+  if (activeFloors.length > 0) {
+    pdfContent += `<div style="margin-bottom: 30px;">
+      <h2 style="font-size: 16px; margin: 0 0 12px 0; padding: 8px 15px; background: linear-gradient(135deg, #e17055, #fdcb6e); color: white; border-radius: 6px; font-weight: 600;">🔊 AUDIO / LUCES / SIRENAS</h2>
+      <table style="width: 100%; border-collapse: collapse; font-size: 9px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;">
+        <tr style="background: linear-gradient(135deg, #e17055, #fdcb6e); color: white;">
+          <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600;">Piso</th>
+          <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600;">Tipo</th>
+          <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600; width: 50px;">F</th>
+          <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600; width: 50px;">N-F</th>
+          <th style="border: 1px solid #ddd; padding: 8px; font-weight: 600;">Observaciones</th>
+        </tr>`;
+
+    activeFloors.forEach((f, idx) => {
+      ['audio', 'lights', 'sirens'].forEach(kind => {
+        const has = kind === 'audio' ? f.hasAudio : kind === 'lights' ? f.hasLights : f.hasSirens;
+        if (!has) return;
+        const res = getALSResult(f.id, kind) || {};
+        const fStatus = res.status === 'F' ? '✓' : '';
+        const nfStatus = res.status === 'NF' ? '✗' : '';
+        const bgColor = idx % 2 === 0 ? '#ffffff' : '#fff9f0';
+        const fColor = res.status === 'F' ? '#28a745' : '#dee2e6';
+        const nfColor = res.status === 'NF' ? '#dc3545' : '#dee2e6';
+        const label = kind === 'audio' ? '🔊 Bocinas' : kind === 'lights' ? '💡 Luces' : '🚨 Sirenas';
+        pdfContent += `<tr style="background: ${bgColor};">
+          <td style="border: 1px solid #ddd; padding: 6px 8px;">${f.name}</td>
+          <td style="border: 1px solid #ddd; padding: 6px 8px;">${label}</td>
+          <td style="border: 1px solid #ddd; padding: 6px 8px; text-align: center; font-weight: bold; color: ${fColor}; font-size: 14px;">${fStatus}</td>
+          <td style="border: 1px solid #ddd; padding: 6px 8px; text-align: center; font-weight: bold; color: ${nfColor}; font-size: 14px;">${nfStatus}</td>
+          <td style="border: 1px solid #ddd; padding: 6px 8px; color: #6c757d;">${res.comment || ''}</td>
+        </tr>`;
+      });
+    });
+    pdfContent += `</table></div>`;
+  }
+
+  // Footer
+  pdfContent += `
+    <div style="text-align: center; padding: 15px; margin-top: 20px; color: #6c757d; font-size: 9px; border-top: 1px solid #dee2e6;">
+      <p style="margin: 0;">Sistema de Protocolo de Pruebas — Hoteles</p>
+    </div>
+  </div>`;
+
+  // Generate PDF
+  const opt = {
+    margin: 8,
+    filename: `Protocolo_${(projectName).replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+  };
+
+  html2pdf().set(opt).from(pdfContent).save().then(() => {
+    toast('PDF descargado correctamente','success');
+  }).catch(err => {
+    toast('Error al generar PDF: ' + err.message,'error');
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   CLEAR ALL DATA
+═══════════════════════════════════════════════ */
+function clearAllData() {
+  if (!confirm('¿Está seguro que desea eliminar TODOS los datos del sistema? Esta acción no se puede deshacer.')) {
+    return;
+  }
+  // Clear all data
+  state.floors = [];
+  state.devices = { inputs: [], outputs: [] };
+  state.results = {};
+  state.alsResults = {};
+  state.project = null;
+  state.logo = null;
+
+  // Clear localStorage
+  localStorage.removeItem('pph_session');
+
+  // Reset UI
+  document.getElementById('screen-login').style.display = 'flex';
+  document.getElementById('app-header').style.display = 'none';
+  document.getElementById('screen-main').classList.remove('active');
+
+  // Clear login form
+  document.getElementById('login-nombre').value = '';
+  document.getElementById('login-apellido').value = '';
+  document.getElementById('login-proyecto').value = '';
+  document.getElementById('login-cotizacion').value = '';
+
+  // Remove resume banner if exists
+  const banner = document.getElementById('resume-banner');
+  if (banner) banner.remove();
+
+  toast('Todos los datos han sido eliminados','success');
+}
+
+/* ═══════════════════════════════════════════════
+   JSON SAVE / LOAD
+═══════════════════════════════════════════════ */
+function saveJSON(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`Protocolo_${(state.project?.nombre||'proyecto').replace(/\s+/g,'_')}.json`;
+  a.click(); URL.revokeObjectURL(url);
+  toast('Archivo JSON guardado','success');
+}
+
+function loadJSON(event){
+  const file=event.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      state=Object.assign({},state,data);
+      if(!state.devices) state.devices={inputs:[],outputs:[]};
+      if(!state.results) state.results={};
+      if(!state.alsResults) state.alsResults={};
+      if(!state.floors) state.floors=[];
+      saveSession();
+      if(state.user&&state.project) startApp();
+      else toast('JSON cargado. Inicie sesión.','info');
+    } catch(err){ toast('Error al leer JSON: '+err.message,'error'); }
+    event.target.value='';
+  };
+  reader.readAsText(file);
+}
+
+/* ═══════════════════════════════════════════════
+   THEME / LOGO
+═══════════════════════════════════════════════ */
+function setTheme(theme,btn){
+  state.theme=theme; applyThemeUI(theme);
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); saveSession();
+}
+function applyThemeUI(theme){
+  const actual=theme==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):theme;
+  document.body.setAttribute('data-theme',actual);
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
+  const btn=document.getElementById('theme-'+theme); if(btn) btn.classList.add('active');
+}
+function applySavedTheme(){
+  const raw=localStorage.getItem('pph_session');
+  if(raw){try{const s=JSON.parse(raw);if(s.theme)applyThemeUI(s.theme);}catch(e){}}
+}
+function loadLogo(event){
+  const file=event.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{ state.logo=e.target.result; applyLogo(e.target.result); saveSession(); toast('Logo actualizado','success'); };
+  reader.readAsDataURL(file); event.target.value='';
+}
+function applyLogo(src){
+  const img=document.getElementById('app-logo'),ph=document.getElementById('app-logo-placeholder');
+  img.src=src; img.style.display='block'; ph.style.display='none';
+  img.onclick=()=>document.getElementById('logo-input').click();
+  const pw=document.getElementById('logo-preview-wrap'); if(pw) pw.innerHTML=`<img src="${src}" class="current-logo" alt="Logo">`;
+  const ll=document.getElementById('login-logo-display'); if(ll){ll.innerHTML=`<img src="${src}" style="width:60px;height:60px;object-fit:contain;border-radius:12px;">`;ll.style.background='transparent';}
+}
+function removeLogo(){
+  state.logo=null;
+  document.getElementById('app-logo').style.display='none';
+  document.getElementById('app-logo-placeholder').style.display='flex';
+  const pw=document.getElementById('logo-preview-wrap'); if(pw) pw.innerHTML='';
+  saveSession(); toast('Logo eliminado','info');
+}
+
+/* ═══════════════════════════════════════════════
+   MODALS / UTILS
+═══════════════════════════════════════════════ */
+function openModal(id){ document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
+function openSettings(){
+  const pw=document.getElementById('logo-preview-wrap');
+  if(pw&&state.logo) pw.innerHTML=`<img src="${state.logo}" class="current-logo" alt="Logo">`;
+  openModal('modal-settings');
+}
+document.addEventListener('click',e=>{ if(e.target.classList.contains('modal-overlay')) closeModal(e.target.id); });
+function togglePanel(header){ header.classList.toggle('collapsed'); header.nextElementSibling.classList.toggle('hidden'); }
+function scrollToFloor(type,floor){ const el=document.getElementById('floor-'+type+'-'+CSS.escape(floor)); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); }
+function toast(msg,type='info'){
+  const tc=document.getElementById('toast-container');
+  const t=document.createElement('div'); t.className='toast '+type;
+  t.innerHTML=`<span>${{success:'✅',error:'❌',info:'ℹ️'}[type]||'ℹ️'}</span><span>${msg}</span>`;
+  tc.appendChild(t); setTimeout(()=>t.remove(),3500);
+}
+</script>
+</body>
+</html>
